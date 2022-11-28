@@ -120,7 +120,6 @@ void XPRS_CC intsol(XPRSprob problem, void *data)
 
 int XPRS_CC checktime(XPRSprob problem, void *_data)
 {
-    // printf("check time callback");
     if (presolveFinished && totalNumSolutionsFound != totalNumSolutionsAdded)
     {
         std::lock_guard<std::mutex> guard(heuristicSolutions_mutex);
@@ -138,9 +137,9 @@ int XPRS_CC checktime(XPRSprob problem, void *_data)
             XPRSaddmipsol(problem, values.size(), values.data(),
                           gFJData.originalIntegerCols.data(), nullptr);
 
-            // Add all values and let the solver handle it.
-            // auto data= new std::vector<double>(sol.assignment);
-            // XPRSaddmipsol(problem, data->size(), data->data(), nullptr, nullptr);
+            // We could also have added all values and let the solver handle it, like this:
+            //   auto data = new std::vector<double>(sol.assignment);
+            //   XPRSaddmipsol(problem, data->size(), data->data(), nullptr, nullptr);
         }
         totalNumSolutionsAdded += heuristicSolutions.size();
         heuristicSolutions.clear();
@@ -218,13 +217,10 @@ bool copyDataToHeuristicSolver(FeasibilityJumpSolver &solver, ProblemInstance &d
         else if (data.varTypes[colIdx] == 'B')
         {
             vartype = VarType::Integer;
-            // printf("Binary ub %g lb %g \n", data.ub[colIdx], data.lb[colIdx]);
-            // assert(fabs(data.ub[colIdx] - 1.0) < 1e-5);
-            // assert(fabs(data.lb[colIdx] - 0.0) < 1e-5);
         }
         else
         {
-            printf(FJ_LOG_PREFIX "unsupported variable type '%c' (%d). Ignoring.\n",
+            printf(FJ_LOG_PREFIX "unsupported variable type '%c' (%d).\n",
                    data.varTypes[colIdx], data.varTypes[colIdx]);
             return false;
         }
@@ -258,7 +254,7 @@ bool copyDataToHeuristicSolver(FeasibilityJumpSolver &solver, ProblemInstance &d
 
             if (data.rhsrange[rowIdx] < 0.0)
             {
-                printf(FJ_LOG_PREFIX "unsupported negative range value '%g'. Ignoring constraint.\n",
+                printf(FJ_LOG_PREFIX "unsupported negative range value '%g'.\n",
                        data.rhsrange[rowIdx]);
                 return false;
             }
@@ -320,15 +316,7 @@ void mapHeuristicSolution(FJStatus &status, bool usePresolved)
         for (int i = 0; i < data.numCols; i += 1)
             if (data.varTypes[i] != 'C')
             {
-
                 XPRSchgbounds(copy, 1, &i, "B", &status.solution[i]);
-
-                // double lbcheck;
-                // XPRSgetlb(copy, &lbcheck, i, i);
-                // double ubcheck;
-                // XPRSgetlb(copy, &ubcheck, i, i);
-                // assert(lbcheck == status.solution[i]);
-                // assert(ubcheck == status.solution[i]);
             }
 
         XPRSsetintcontrol(copy, XPRS_LPITERLIMIT, INT_MAX - 2);
