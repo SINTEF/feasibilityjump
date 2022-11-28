@@ -493,7 +493,7 @@ void start_feasibility_jump_heuristic(XPRSprob problem, size_t maxTotalSolutions
 
 int printUsage()
 {
-    printf("Usage: xpress_fj [--timeout|t TIMEOUT] [--save-solutions|-s OUTDIR] [--verbose|-v] [--heuristic-only|-h] [--exponential-decay|-e] [--relax-continuous|-r] INFILE\n");
+    printf("Usage: xpress_fj [--timeout|-t TIMEOUT] [--save-solutions|-s OUTDIR] [--verbose|-v] [--heuristic-only|-h] [--exponential-decay|-e] [--relax-continuous|-r] INFILE\n");
     return 1;
 }
 

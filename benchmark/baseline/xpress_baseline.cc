@@ -55,7 +55,7 @@ std::vector<int> originalIntegerCols;
 
 int printUsage()
 {
-    printf("Usage: xpress_baseline [--timeout|t TIMEOUT] [--save-solutions|-s OUTDIR] INFILE\n");
+    printf("Usage: xpress_baseline [--timeout|-t TIMEOUT] [--save-solutions|-s OUTDIR] INFILE\n");
     return 1;
 }
 
