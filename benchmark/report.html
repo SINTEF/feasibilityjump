@@ -20,7 +20,7 @@
 </head>
 
 <body>
-    <h1>mip2022comp results</h1>
+    <h1>Benchmark results</h1>
     <script>
         var runs = d3.select("body")
             .selectAll("details")
@@ -51,7 +51,9 @@
 
         groups.append("h3").text(([g, x]) => `Group ${g} (solved ${count_solutions(x)})`);
 
-	groups.append("pre").text(([g,x]) => {
+	const csvDetails = groups.append("details");
+        csvDetails.append("summary").append("h2").style("display", "inline").text(d => "CSV");
+	csvDetails.append("pre").text(([g,x]) => {
 		//let csv = "Instance;Time;Objective value\n";
 		let csv = "";
 		for (const [name,d] of Object.entries(x)) {
