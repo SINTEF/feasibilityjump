@@ -11,10 +11,10 @@ echo "Building xpress_baseline..."
 for timeout in 60 600
 do
 	echo "Running xpress_baseline $timeout second benchmarking..."
-	(cd benchmark && python run.py --timeout $timeout baseline/xpress_baseline baseline_$timeout miplib2017benchmark)
+	(cd benchmark && python3 run.py --timeout $timeout baseline/xpress_baseline baseline_$timeout miplib2017benchmark)
 
 	echo "Running xpress_fj $timeout second benchmarking..."
-	(cd benchmark && python run.py --timeout $timeout ../xpress_fj xpress_fj_$timeout miplib2017benchmark)
+	(cd benchmark && python3 run.py --timeout $timeout ../xpress_fj xpress_fj_$timeout miplib2017benchmark)
 done
 
 echo "Building results report..."
