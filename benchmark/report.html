@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="results/summary.json.js"></script>
+	<style>
+	table {
+	  border: 2px solid black;
+	  border-collapse: collapse;
+	}
+		th, td {
+	  border: 1px solid black;
+	  padding: 2px 8px 0;
+	  text-align: left;
+	}
+
+	</style>
+</head>
+
+<body>
+    <h1>mip2022comp results</h1>
+    <script>
+        var runs = d3.select("body")
+            .selectAll("details")
+            .data(mipcomp_data)
+            .enter().append("details");
+
+        //runs.attr("open", true);
+        runs.append("summary").append("h2").style("display", "inline").text(d => `Run ${d["runname"]}`);
+
+        var info = runs.selectAll("div")
+            .data(d => Object.entries(d).filter(([key, _]) => key != "groups"))
+            .enter().append("div");
+
+        info.append("b").text(([k, v]) => k);
+        info.append("span").text(_ => ": ");
+        info.append("span").text(([k, v]) => JSON.stringify(v));
+
+        var groups = runs.selectAll("p")
+            .data(d => Object.entries(d["groups"]))
+            .enter().append("p");
+
+
+        function count_solutions(sols) {
+            const solved = Object.entries(sols).filter(([k,v]) => v["solutions"].length > 0).length;
+            const total = Object.entries(sols).length;
+            return `${solved}/${total}`;
+        }
+
+        groups.append("h3").text(([g, x]) => `Group ${g} (solved ${count_solutions(x)})`);
+
+	groups.append("pre").text(([g,x]) => {
+		//let csv = "Instance;Time;Objective value\n";
+		let csv = "";
+		for (const [name,d] of Object.entries(x)) {
+			const sols = d["solutions"];
+			let row;
+			const n = "\\verb|" + name.replace(".mps","") + "|";
+			if (sols.length > 0) {
+				row = `${n} & ${sols[0]["time"]} & ${sols[sols.length-1]["time"]} & ${Number(d["t_terminate"]).toFixed(2)} & ${sols[0]["obj"].toPrecision(4)} & ${sols[sols.length-1]["obj"].toPrecision(4)} \\\\`;
+			} else {
+				row = `${n} & - & - & ${Number(d["t_terminate"]).toFixed(2)} & - & - \\\\`;
+			}
+			csv = csv + row + "\n";
+        //rows.append("td").text(([_, _d, sols]) => sols.length > 0 ? sols[0]["time"] : "-");
+        //rows.append("td").text(([_, _d, sols]) => sols.length > 0 ? sols[sols.length - 1]["time"] : "-");
+        //rows.append("td").text(([_, d, _s]) => Number(d["t_terminate"]).toFixed(2)),
+        //rows.append("td").text(([_, _d, sols]) => sols.length > 0 ? sols[0]["obj"] : "-");
+        //rows.append("td").text(([_, _d, sols]) => sols.length > 0 ? sols[sols.length - 1]["obj"] : "-");
+		}
+		return csv;
+	});
+
+        var groupTable = groups.append("table");
+        var tHead = groups.append("thead");
+        var tBody = groups.append("tbody");
+
+        var header = tHead.append("tr");
+        header.append("th").text("instance");
+        header.append("th").text("t first");
+        header.append("th").text("t last");
+        header.append("th").text("t finish");
+        header.append("th").text("obj first");
+        header.append("th").text("obj last");
+
+        var rows = tBody.selectAll("tr")
+            .data(([_, instances]) => Object.entries(instances).map(([n, d]) => [n, d, d["solutions"]]))
+            .enter().append("tr");
+
+
+        rows.style("background-color", ([_n, _d, sols]) => sols.length > 0 ? "#2E8B5780" : "#FA807280");
+        rows.style("padding", "2em");
+
+        rows.append("td").text(([n, _d, _]) => n);
+        rows.append("td").text(([_, _d, sols]) => sols.length > 0 ? sols[0]["time"] : "-");
+        rows.append("td").text(([_, _d, sols]) => sols.length > 0 ? sols[sols.length - 1]["time"] : "-");
+        rows.append("td").text(([_, d, _s]) => Number(d["t_terminate"]).toFixed(2)),
+        rows.append("td").text(([_, _d, sols]) => sols.length > 0 ? sols[0]["obj"] : "-");
+        rows.append("td").text(([_, _d, sols]) => sols.length > 0 ? sols[sols.length - 1]["obj"] : "-");
+
+
+    </script>
+</body>
+
+</html>
