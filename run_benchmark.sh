@@ -18,6 +18,6 @@ do
 done
 
 echo "Building results report..."
-(cd benchmark && python report.py)
+(cd benchmark && python3 report.py)
 
 echo "Benchmarking finished. See benchmark/report.html."
