@@ -493,7 +493,7 @@ void start_feasibility_jump_heuristic(XPRSprob problem, size_t maxTotalSolutions
 
 int printUsage()
 {
-    printf("Usage: xpress_fj [--save-solutions|-s OUTDIR] [--verbose|-v] [--heuristic-only|-h] [--exponential-decay|-e] [--relax-continuous|-r] INFILE\n");
+    printf("Usage: xpress_fj [--timeout|t TIMEOUT] [--save-solutions|-s OUTDIR] [--verbose|-v] [--heuristic-only|-h] [--exponential-decay|-e] [--relax-continuous|-r] INFILE\n");
     return 1;
 }
 
@@ -503,6 +503,7 @@ int main(int argc, char *argv[])
     bool heuristicOnly = false;
     bool relaxContinuous = false;
     bool exponentialDecay = false;
+    int timeout = INT32_MAX/2;
 
     std::string inputPath;
     for (int i = 1; i < argc; i += 1)
@@ -516,6 +517,14 @@ int main(int argc, char *argv[])
                 return printUsage();
             i += 1;
         }
+       else if (argvi == "--timeout" || argvi == "-t")
+       {
+            if (i + 1 < argc)
+                timeout = std::stoi(argv[i + 1]);
+            else
+                return printUsage();
+            i += 1;
+       }
         else if (argvi == "--verbose" || argvi == "-v")
             verbose += 1;
         else if (argvi == "--heuristic-only" || argvi == "-h")
@@ -593,8 +602,8 @@ int main(int argc, char *argv[])
                           .count() /
                       1000.0;
 
-        int timeout = std::ceil(60.0 - time);
-        XPRSsetintcontrol(problem, XPRS_MAXTIME, -timeout);
+        int xpress_timeout = std::ceil(timeout - time);
+        XPRSsetintcontrol(problem, XPRS_MAXTIME, -xpress_timeout);
         CHECK_RETURN(XPRSmipoptimize(problem, ""));
 
         double ub, lb;

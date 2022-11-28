@@ -53,23 +53,47 @@ void XPRS_CC intsol(XPRSprob problem, void *data)
 
 std::vector<int> originalIntegerCols;
 
+int printUsage()
+{
+    printf("Usage: xpress_baseline [--timeout|t TIMEOUT] [--save-solutions|-s OUTDIR] INFILE\n");
+    return 1;
+}
+
+
 int main(int argc, char *argv[])
 {
 
-    int timeout;
+    int timeout = INT32_MAX/2;
     double ub, lb;
     double time;
 
-    startTime = std::chrono::steady_clock::now();
-    if (argc != 3)
+    std::string mpsFile;
+    for (int i = 1; i < argc; i += 1)
     {
-        printf("Usage: xpressplain MPSFILE OUTDIR\n");
-        return 1;
+        std::string argvi(argv[i]);
+        if (argvi == "--save-solutions" || argvi == "-s")
+        {
+            if (i + 1 < argc)
+                outDir = std::string(argv[i + 1]);
+            else
+                return printUsage();
+            i += 1;
+        }
+        else if (argvi == "--timeout" || argvi == "-t")
+        {
+            if (i + 1 < argc)
+                timeout = std::stoi(argv[i + 1]);
+            else
+                return printUsage();
+            i += 1;
+        }
+        else if (!mpsFile.empty())
+            return printUsage();
+        else
+            mpsFile = argvi;
     }
 
-    std::string mpsFile = std::string(argv[1]);
     mpsFileName = mpsFile.substr(mpsFile.find_last_of("/\\") + 1);
-    outDir = std::string(argv[2]);
 
     int returnCode = 0;
     XPRSprob problem = nullptr;
@@ -80,6 +104,9 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Licensing error: %s\n", message);
         return 1;
     }
+
+
+    startTime = std::chrono::steady_clock::now();
 
     int numColsAll;
     std::vector<char> varTypes;

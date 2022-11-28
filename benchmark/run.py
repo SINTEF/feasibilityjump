@@ -99,19 +99,22 @@ def run_solver(instance_file: str):
     start = time.time()
     solver_result = None
     try:
-        args = solver_exe_args + [instance_file, output_dir]
+        args = solver_exe_args + ["--timeout", str(timeout_secs), "--save-solutions", output_dir, instance_file]
         proc = subprocess.Popen(args, preexec_fn=os.setsid, stdout=subprocess.PIPE)
         print(f"    Running {args} as PID {proc.pid}...")
+        outs = b''
         try:
-            #proc.wait(timeout=timeout_secs)
-            outs, errs = proc.communicate(timeout=timeout_secs)
-            for line in outs.decode('utf-8').splitlines():
-                if line.startswith("{\""):
-                    solver_result = json.loads(line)
+            proc_timeout = timeout_secs + 5 # Give a grace period for the program to shut down and print its bounds.
+            outs, _errs = proc.communicate(timeout=proc_timeout)
         except subprocess.TimeoutExpired as e:
             # This is normal, the solver might run indefinitely, and that's ok.
             print(f"Killing process {proc.pid}.")
             os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+            outs, _errs = proc.communicate(timeout=timeout_secs)
+        print(outs.decode("utf-8"))
+        for line in outs.decode('utf-8').splitlines():
+            if line.startswith("{\""):
+                solver_result = json.loads(line)
     except subprocess.CalledProcessError as e:
         print(f"Solver failed on instance {instance_file}: {e}")
     end = time.time()
@@ -167,7 +170,7 @@ for group in groups:
         instance_data.append((dt, solver_result))
 
     group_data = {
-        "instances": [{"name": name, "path": path, "t_terminate": time, "solver_result": solver_result } for (name, path), (time, solver_result) in zip(instances, instance_times)],
+        "instances": [{"name": name, "path": path, "t_terminate": time, "solver_result": solver_result } for (name, path), (time, solver_result) in zip(instances, instance_data)],
     }
 
     with open(os.path.join(output_dir, f"group_{group}.json"), "w", encoding="utf-8") as f:
