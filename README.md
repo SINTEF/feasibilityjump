@@ -3,7 +3,7 @@
 This repository contains the reference C++ implementation of the Feasibility
 Jump, which is a primal heuristic for mixed-integer linear programming.
 
-See the [preliminary report](feasibilityjump-2023-01-09.pdf) for details about
+See the [open access paper](https://link.springer.com/article/10.1007/s12532-023-00234-8) for details about
 the algorithm.
 
 ## Usage
