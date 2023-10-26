@@ -38,8 +38,7 @@ To run the integrated solver where FJ solutions are given to Xpress, run:
 
 ## Benchmark
 
-The `run_benchmark.sh` script will reproduce results used in the
-[report](feasibility_jump_2022-11-07.pdf).
+The `run_benchmark.sh` script will reproduce results used in the paper.
 
 The script assumes that you are using Linux and that the `$XPRESSDIR`
 environment variable is set. It then does the following:
