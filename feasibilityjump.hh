@@ -5,6 +5,7 @@
 #include <random>
 #include <cmath>
 #include <cassert>
+#include <climits>
 #include <algorithm>
 
 #define FJ_LOG_PREFIX "Feasibility Jump: "

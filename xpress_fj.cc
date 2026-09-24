@@ -19,6 +19,7 @@ extern "C"
 #include <cmath>
 #include <climits>
 #include <chrono>
+#include <memory>
 
 #include "feasibilityjump.hh"
 
