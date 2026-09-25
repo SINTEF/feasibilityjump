@@ -641,7 +641,7 @@ private:
             for (size_t varIdx = 0; varIdx < problem.vars.size(); varIdx += 1)
                 forEachMove(
                     varIdx, [&](Move &move)
-                    { move.score += weightUpdateIncrement *
+                    { move.score -= weightUpdateIncrement *
                                     problem.vars[varIdx].objectiveCoeff *
                                     (move.value - problem.incumbentAssignment[varIdx]); });
         }
@@ -757,7 +757,7 @@ private:
             varIdx, [&](Move &move)
             {
                 move.score = 0.0;
-                move.score += objectiveWeight *
+                move.score -= objectiveWeight *
                  problem.vars[varIdx].objectiveCoeff * 
                  (move.value - problem.incumbentAssignment[varIdx]);
 
