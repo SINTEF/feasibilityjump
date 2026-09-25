@@ -381,6 +381,10 @@ public:
                     ((1.0 / cell.coeff) * (bound.second - residualIncumbent)),
                 };
 
+                // Dividing by a negative coefficient reverses the interval.
+                if (cell.coeff < 0.)
+                    std::swap(validRange.first, validRange.second);
+
                 if (problem.vars[varIdx].vartype == VarType::Integer)
                     validRange = {
                         std::ceil(validRange.first - equalityTolerance),
