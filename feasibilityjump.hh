@@ -252,6 +252,28 @@ struct Problem
         }
     }
 
+    // Recomputes the objective and the constraint LHSs from scratch, since
+    // their incremental updates can accumulate large rounding errors (e.g.
+    // after a variable has visited a very large bound). Returns true if the
+    // incumbent assignment is feasible. Updates `incumbentObjective` to the
+    // recomputed value, but leaves the constraints' incremental state as is.
+    bool checkIncumbentExact()
+    {
+        incumbentObjective = 0;
+        for (size_t i = 0; i < vars.size(); i += 1)
+            incumbentObjective += vars[i].objectiveCoeff * incumbentAssignment[i];
+
+        for (auto &cstr : constraints)
+        {
+            double lhs = 0.0;
+            for (auto &vc : cstr.coeffs)
+                lhs += vc.coeff * incumbentAssignment[vc.idx];
+            if (cstr.score(lhs) < -violationTolerance)
+                return false;
+        }
+        return true;
+    }
+
     // Updates a variable assignment for `varIdx` to `newValue`.
     // Takes a function parameter f that receives a LhsModification
     // for every variable/constraint combination (except for `varIdx` itself)
@@ -528,6 +550,18 @@ public:
 
             if (problem.violatedConstraints.empty() && improvesObjective(problem.incumbentObjective))
             {
+                // Verify the solution without the incremental rounding errors.
+                // If it is not actually feasible, the incremental state has
+                // drifted, so recompute it and keep searching.
+                totalEffort += problem.nNonzeros;
+                if (!problem.checkIncumbentExact())
+                {
+                    init(nullptr);
+                    continue;
+                }
+                if (!improvesObjective(problem.incumbentObjective))
+                    continue;
+
                 effortAtLastImprovement = totalEffort;
                 bestObjective = problem.incumbentObjective;
                 if (user_terminate(callback, problem.incumbentAssignment.data()))
@@ -560,6 +594,7 @@ private:
 
         // Reset the variable scores.
         goodVarsSet.clear();
+        std::fill(goodVarsSetIdx.begin(), goodVarsSetIdx.end(), -1);
         for (size_t i = 0; i < problem.vars.size(); i += 1)
             resetMoves(i);
     }
