@@ -6,6 +6,10 @@ Jump, which is a primal heuristic for mixed-integer linear programming.
 See the [open access paper](https://link.springer.com/article/10.1007/s12532-023-00234-8) for details about
 the algorithm.
 
+> **Note:** This branch (`paper-version`) contains the version of the code
+> used for the computational results in the paper, kept for reproducibility.
+> It has known bugs that were fixed later.
+
 ## Usage
 
 To build the Feasibility Jump reference implementation with FICO Xpress
