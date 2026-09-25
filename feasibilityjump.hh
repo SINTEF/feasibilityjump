@@ -1,12 +1,14 @@
 #include <algorithm>
-#include <functional>
-#include <vector>
-#include <numeric>
-#include <random>
-#include <cmath>
 #include <cassert>
 #include <climits>
-#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <functional>
+#include <limits>
+#include <numeric>
+#include <random>
+#include <vector>
 
 #define FJ_LOG_PREFIX "Feasibility Jump: "
 
@@ -31,8 +33,8 @@ enum CallbackControlFlow
 
 struct FJStatus
 {
-    int totalEffort;
-    int effortSinceLastImprovement;
+    size_t totalEffort;
+    size_t effortSinceLastImprovement;
     int numVars;
     double solutionObjectiveValue;
     double *solution;
@@ -40,9 +42,11 @@ struct FJStatus
 
 const double violationTolerance = 1.0e-5;
 const double equalityTolerance = 1.0e-5;
+// Relative amount by which the objective must decrease to count as a new solution.
+const double objectiveImprovementTolerance = 1.0e-9;
 
 // Measures if two doubles are equal within a tolerance of 1.0e-5.
-bool eq(double a, double b)
+inline bool eq(double a, double b)
 {
     return fabs(a - b) < equalityTolerance;
 }
@@ -125,7 +129,7 @@ struct Problem
     std::vector<uint32_t> violatedConstraints;
     bool usedRelaxContinuous = false;
 
-    size_t nNonzeros;
+    size_t nNonzeros = 0;
     double incumbentObjective = NAN;
 
     int addVar(VarType vartype, double lb, double ub, double objCoeff)
@@ -148,7 +152,7 @@ struct Problem
 
         // If we are relaxing continuous variables, an equality needs to be split into Gte and Lte.
         if (relax_continuous > 0 && sense == RowType::Equal)
-            if (std::any_of(rowVarIdxs, rowVarIdxs + numCoeffs, [&](double varIdx)
+            if (std::any_of(rowVarIdxs, rowVarIdxs + numCoeffs, [&](int varIdx)
                             { return vars[varIdx].vartype == VarType::Continuous; }))
             {
                 addConstraint(RowType::Gte, rhs, numCoeffs, rowVarIdxs, rowCoeffs, relax_continuous);
@@ -310,7 +314,7 @@ struct Problem
     }
 };
 
-void modifyMove(LhsModification mod, Problem &problem, Move &move)
+inline void modifyMove(LhsModification mod, Problem &problem, Move &move)
 {
     Constraint &c = problem.constraints[mod.constraintIdx];
     auto incumbent = problem.incumbentAssignment[mod.varIdx];
@@ -461,7 +465,7 @@ class FeasibilityJumpSolver
     double weightUpdateDecay;
     double weightUpdateIncrement = 1.0;
 
-    size_t nBumps;
+    size_t nBumps = 0;
 
     // The probability of choosing a random positive-score variable.
     const double randomVarProbability = 0.001;
@@ -519,7 +523,7 @@ public:
                 bestViolationScore = problem.violatedConstraints.size();
             }
 
-            if (problem.violatedConstraints.empty() && problem.incumbentObjective < bestObjective)
+            if (problem.violatedConstraints.empty() && improvesObjective(problem.incumbentObjective))
             {
                 effortAtLastImprovement = totalEffort;
                 bestObjective = problem.incumbentObjective;
@@ -538,6 +542,13 @@ public:
     }
 
 private:
+    bool improvesObjective(double objective)
+    {
+        if (bestObjective == std::numeric_limits<double>::infinity())
+            return true;
+        return objective < bestObjective - objectiveImprovementTolerance * std::max(1.0, std::fabs(bestObjective));
+    }
+
     void init(double *initialValues)
     {
         problem.resetIncumbent(initialValues);

@@ -381,7 +381,7 @@ void mapHeuristicSolution(FJStatus &status, bool usePresolved)
     }
 }
 
-const int maxEffort = 100000000;
+const size_t maxEffort = 100000000;
 
 // Starts background threads running the Feasibility Jump heuristic.
 // Also installs the check-time callback to report any feasible solutions
@@ -458,7 +458,7 @@ void start_feasibility_jump_heuristic(XPRSprob problem, size_t maxTotalSolutions
                             auto quitNumSol = totalNumSolutionsFound >= maxTotalSolutions;
                             if(quitNumSol) printf(FJ_LOG_PREFIX "quitting because number of solutions %zd >= %zd.\n", totalNumSolutionsFound.load(), maxTotalSolutions);
                             auto quitEffort = status.effortSinceLastImprovement > maxEffort;
-                            if(quitEffort) printf(FJ_LOG_PREFIX "quitting because effort %d > %d.\n", status.effortSinceLastImprovement , maxEffort);
+                            if(quitEffort) printf(FJ_LOG_PREFIX "quitting because effort %zu > %zu.\n", status.effortSinceLastImprovement , maxEffort);
                             
                             auto quit = quitNumSol || quitEffort || heuristicFinished;
                             if (quit)
