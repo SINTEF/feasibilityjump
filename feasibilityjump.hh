@@ -368,7 +368,6 @@ public:
             else
             {
                 constraintBounds.emplace_back(-std::numeric_limits<double>::infinity(), constraint.rhs);
-                constraintBounds.emplace_back(constraint.rhs, constraint.rhs);
                 constraintBounds.emplace_back(constraint.rhs, std::numeric_limits<double>::infinity());
             }
 
