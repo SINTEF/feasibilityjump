@@ -674,11 +674,14 @@ private:
 
             dt += problem.vars.size();
             for (size_t varIdx = 0; varIdx < problem.vars.size(); varIdx += 1)
+            {
                 forEachMove(
                     varIdx, [&](Move &move)
                     { move.score -= weightUpdateIncrement *
                                     problem.vars[varIdx].objectiveCoeff *
                                     (move.value - problem.incumbentAssignment[varIdx]); });
+                updateGoodMoves(varIdx);
+            }
         }
         else
         {
